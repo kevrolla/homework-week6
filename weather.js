@@ -1,6 +1,6 @@
 window.onload = function() {
     const ipUrl = "https://ipinfo.io/json";
-    const appId = "appid=9eed5ea50ed409ea8da0d2ff3601770b";
+    const appId = "appid=166a433c57516f51dfab1f7edaed8413";
     const location = document.getElementById("location");
 
     httpReqIpAsync(ipUrl);
@@ -18,7 +18,7 @@ window.onload = function() {
                 const lat = jsonIp.loc.split(",")[0];
                 const lon = jsonIp.loc.split(",")[1];
                 console.log(lat+" "+lon)
-                const weatherUrl ="http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&${appId}";
+                const weatherUrl =`http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&${appId}`;
                 httpReqWeatherAsync(weatherUrl);
             }
         }
