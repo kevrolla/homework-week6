@@ -1,53 +1,52 @@
-window.onload = function() {
-    const ipUrl = "https://ipinfo.io/json";
-    const appId = "appid=166a433c57516f51dfab1f7edaed8413";
-    const location = document.getElementById("location");
+const api = {
+    key: "166a433c57516f51dfab1f7edaed8413",
+    base: "https://api.openweathermap.org/data/2.5/"
+    
+}
+const searchbox = document.querySelector('.search-box');
+searchbox.addEventListener('keypress', setQuery);
 
-    httpReqIpAsync(ipUrl);
-
-    function httpReqIpAsync(url, callback) {
-        const httpReqIp = new XMLHttpRequest();
-        httpReqIp.open("GET", url, true);
-        httpReqIp.onreadystatechange = function() {
-            if(httpReqIp.readyState == 4 && httpReqIp.status == 200) {
-                const jsonIp = JSON.parse(httpReqIp.responseText);
-                console.log(jsonIp);
-                const city = jsonIp.city;
-                const country = jsonIp.country;
-                location.innerHTML = `${city}, ${country}`;
-                const lat = jsonIp.loc.split(",")[0];
-                const lon = jsonIp.loc.split(",")[1];
-                console.log(lat+" "+lon)
-                const weatherUrl =`http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&${appId}`;
-                httpReqWeatherAsync(weatherUrl);
-            }
-        }
-        httpReqIp.send();
-        
-    }
-    function httpReqWeatherAsync(url, callback) {
-        const httpReqWeather = new XMLHttpRequest();
-        httpReqWeather.open("GET", url, true);
-        httpReqWeather.onreadystatechange = function() {
-            if(httpReqWeather.readyState == 4 && httpReqWeather.status == 200) {
-                const jsonWeather = JSON.parse(httpReqWeather.responseText);
-                console.log(jsonWeather);
-                const description = jsonWeather.weather[0].description;
-                const id = jsonWeather.weather[0].id;
-                const temperature = jsonWeather.main.temp;
-                const tempFaren = Math.round(1.8 * (temperature - 273) + 32);
-                const humidity = jsonWeather.main.humidity;
-                const windSpeed = jsonWeather.wind.speed;
-                const visibility = jsonWeather.visibility;
-                const desc = document.getElementById("description");
-                desc.innerHTML = `<i id="icon-desc" class="wi wi-owm-${id}"></i><p id="desc">${description}</p>`;
-                const temp = document.getElementById("temperature");
-                temp.innerHTML = `${tempFaren}<i class="wi wi-thermometer"></i>`;
-                const humidityElem = document.getElementById("humidity");
-                humidityElem.innerHTML = `${humidity}%`;
-                
-            }
-        }
-        httpReqWeather.send();
+function setQuery(evt) {
+    if (evt.keyCode == 13) {
+        getResults(searchbox.value);
+        console.log(searchbox.value);
     }
 }
+
+function getResults (query) {
+    fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
+    .then(weather => {
+        return weather.json();
+    }).then(displayResults);
+}
+
+function displayResults (weather) {
+    console.log(weather);
+    let city = document.querySelector('.location .city');
+    city.innerText = `${weather.name}, ${weather.sys.country}`;
+
+    let now = new Date();
+    let date = document.querySelector('.location .date');
+    date.innerText = dateBuilder(now);
+
+    let temp = document.querySelector('.current .temp');
+    temp.innerHTML = `${Math.round(weather.main.temp)}<span>°c</span>`;
+
+    let weather_el = document.querySelector('.current .weather');
+    weather_el.innerText = weather.weather[0].main;
+
+    let hilow = document.querySelector('.hi-low');
+    hilow.innerText = `${Math.round(weather.main.temp_min)}°c / ${Math.round(weather.main.temp_max)}°c`;
+ }
+
+ function dateBuilder (d) {
+     let months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+     let days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', ';Thursday', 'Friday', 'Saturday'];
+     
+     let day = days[d.getDay()];
+     let date = d.getDate();
+     let month = months[d.getMonth()];
+     let year = d.getFullYear();
+
+     return `${day} ${month} ${date}, ${year}`;
+ }
